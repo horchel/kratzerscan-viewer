@@ -283,8 +283,22 @@ if ("launchQueue" in window) launchQueue.setConsumer(async p => {
   if (p.files && p.files.length) { const f = await p.files[0].getFile(); openBlob(f, f.name); }
 });
 
-// Zuletzt geöffneten bzw. per „Teilen“ (Android) empfangenen Bericht laden
+// Bericht per Link (…/#bericht=ordner/datei.glb, nur Dateien neben dem Viewer), sonst zuletzt geöffneten bzw.
+// per „Teilen“ (Android) empfangenen Bericht laden
 (async () => {
+  const link = location.hash.match(/^#bericht=([\w./-]+\.glb)$/);
+  if (link && !link[1].includes("..")) {
+    $("err").textContent = "Bericht wird geladen …";
+    $("err").hidden = false;
+    try {
+      const r = await fetch(link[1]);
+      if (!r.ok) throw new Error();
+      return openBlob(await r.blob(), link[1].split("/").pop(), false);
+    } catch (e) {
+      $("err").textContent = "Bericht konnte nicht geladen werden.";
+      return;
+    }
+  }
   try {
     const r = await (await caches.open(STORE)).match(KEY);
     if (r) openBlob(await r.blob(), decodeURIComponent(r.headers.get("x-name") || ""), false);
