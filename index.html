@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>KratzerScan Viewer</title>
+<meta name="description" content="Schadensberichte von KratzerScan ansehen – 3D-Modell mit markierten Schäden, Bauteile, Empfehlung.">
+<meta name="theme-color" content="#15202A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KratzerScan">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script type="module" src="model-viewer.min.js"></script>
+<style>
+:root{--bg:#EEF2EE;--panel:#fff;--ink:#15202A;--muted:#5b6670;--line:#d5dcd6;--accent:#15202A;--accent-ink:#fff;
+  --chip:#e4eae5;--viewer:#e9ece9;--warn:#8a5a00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f161d;--panel:#18222c;--ink:#e6ecef;
+  --muted:#9aa7b1;--line:#2b3742;--accent:#e6ecef;--accent-ink:#15202A;--chip:#22303b;--viewer:#1d2832;--warn:#e0b050}}
+:root[data-theme="dark"]{--bg:#0f161d;--panel:#18222c;--ink:#e6ecef;--muted:#9aa7b1;--line:#2b3742;--accent:#e6ecef;
+  --accent-ink:#15202A;--chip:#22303b;--viewer:#1d2832;--warn:#e0b050}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:10px 16px;
+  padding-top:max(10px,env(safe-area-inset-top));background:#15202A;color:#fff}
+header img{width:30px;height:30px;border-radius:7px}
+header b{font-size:17px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+button,.btn{font:inherit;border:0;border-radius:10px;padding:9px 14px;cursor:pointer;background:var(--accent);color:var(--accent-ink);
+  font-weight:600;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+header .btn{background:#fff;color:#15202A}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+main{max-width:1100px;margin:0 auto;padding:16px;padding-bottom:max(24px,env(safe-area-inset-bottom))}
+h1{font-size:22px;margin:4px 0}
+h2{font-size:17px;margin:26px 0 8px}
+.meta,.note{color:var(--muted);font-size:13px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+#start .panel{max-width:620px;margin:6vh auto 0;text-align:center}
+#start h1{font-size:24px}
+#start ol{text-align:left;padding-left:20px;margin:8px 0}
+#start .big{font-size:17px;padding:13px 22px;margin:14px 0 6px}
+#drop{outline:2px dashed transparent;outline-offset:6px;border-radius:14px}
+#drop.over{outline-color:var(--muted)}
+.err{color:#b3261e;font-weight:600}
+model-viewer{width:100%;height:62vh;min-height:320px;max-height:720px;background:var(--viewer);border-radius:14px;
+  --poster-color:transparent}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px;-webkit-overflow-scrolling:touch}
+.chip{flex:none;background:var(--chip);color:var(--ink);border-radius:999px;padding:6px 12px 6px 6px;font-weight:600;font-size:14px}
+.dot{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;color:#000;font-size:12px;
+  font-weight:700;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.hs{border:2px solid #fff;border-radius:50%;width:30px;height:30px;padding:0;font-weight:700;font-size:13px;color:#000;
+  box-shadow:0 1px 4px rgba(0,0,0,.45);position:relative;justify-content:center}
+.hs span{display:none;position:absolute;left:34px;top:-4px;width:max-content;max-width:210px;text-align:left;
+  background:#fff;color:#15202A;padding:5px 9px;border-radius:6px;font-weight:400;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.hs.open span{display:block}
+@media (hover:hover){.hs:hover span{display:block}}
+.grid2{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.grid2 img{width:200px;max-width:100%;background:#fff;border-radius:10px;padding:6px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;background:var(--panel)}
+td,th{border:1px solid var(--line);padding:5px 9px;font-size:13px;vertical-align:top;text-align:left}
+th{background:var(--chip)}
+#parts td,#parts th{min-width:90px}#parts td:last-child{min-width:280px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer}
+.card img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--viewer)}
+.card div{padding:10px 12px;font-size:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <img src="icon-192.png" alt="">
+  <b id="htitle">KratzerScan Viewer</b>
+  <label class="btn" for="file">Bericht öffnen</label>
+  <input id="file" type="file" hidden>
+</header>
+
+<main>
+  <section id="start">
+    <div class="panel" id="drop">
+      <h1>Schadensbericht ansehen</h1>
+      <p>Öffne die Berichtsdatei aus KratzerScan (<b>Schadensbericht_….glb</b>). Du siehst das 3D-Modell mit den markierten
+        Schäden, die betroffenen Bauteile und die Empfehlung.</p>
+      <label class="btn big" for="file">Berichtsdatei wählen</label>
+      <p id="err" class="err" hidden></p>
+      <h2>So kommt die Datei aufs Handy</h2>
+      <ol>
+        <li><b>iPhone:</b> Anhang in Mail/WhatsApp antippen → Teilen → <i>In Dateien sichern</i>, dann hier „Berichtsdatei wählen“.</li>
+        <li><b>Android:</b> Anhang speichern und hier wählen – oder nach dem Installieren direkt über <i>Teilen → KratzerScan</i>.</li>
+      </ol>
+      <p class="note">Tipp: Über „Zum Home-Bildschirm“ (iPhone: Teilen-Menü in Safari; Android: Menü in Chrome) wird der
+        Viewer zur App und funktioniert auch offline. Berichte werden nicht hochgeladen – sie bleiben auf diesem Gerät.</p>
+    </div>
+  </section>
+
+  <section id="report" hidden>
+    <h1 id="title"></h1>
+    <p class="meta" id="meta"></p>
+    <model-viewer id="mv" camera-controls touch-action="pan-y" tone-mapping="neutral" exposure="1" shadow-intensity="0"
+      min-camera-orbit="auto auto 0.02m" min-field-of-view="2deg" interpolation-decay="120"
+      ar ar-modes="webxr quick-look" alt="3D-Modell des Fahrzeugs mit markierten Schäden"></model-viewer>
+    <p class="note">Drehen mit einem Finger, zoomen mit zwei Fingern. Nummer antippen zeigt die Angaben; ein Bereich unten
+      springt im Modell an die Stelle.</p>
+    <div class="chips" id="chips"></div>
+
+    <div id="details">
+      <h2>Fahrzeug und betroffene Bereiche</h2>
+      <div class="grid2"><div class="scroll"><table id="fz"></table></div><img id="sketch" alt="Draufsicht mit betroffenen Bauteilen"></div>
+      <h2>Vermessung</h2><p id="verm"></p>
+      <h2>Betroffene Bauteile und Empfehlung</h2>
+      <div class="scroll"><table id="parts"></table></div>
+      <h2>Schadensbereiche</h2>
+      <div class="cards" id="cards"></div>
+      <p class="note" id="hinweis"></p>
+    </div>
+    <p class="note" id="plain" hidden>Diese Datei enthält nur das 3D-Modell, keine Berichtsdaten.</p>
+    <div class="row">
+      <label class="btn" for="file">Anderen Bericht öffnen</label>
+      <button class="ghost" id="close">Bericht von diesem Gerät entfernen</button>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const STORE = "kratzerscan-bericht", KEY = "./_bericht";
+let url = null;
+
+function el(tag, props = {}, ...kids) {
+  const n = document.createElement(tag);
+  Object.assign(n, props);
+  for (const k of kids) n.append(k);
+  return n;
+}
+const B64 = /^[A-Za-z0-9+/=]+$/;
+
+// GLB lesen: Kopf prüfen, JSON-Teil auswerten (Berichtsdaten in extras.kratzerscan)
+function readGlb(buf) {
+  const dv = new DataView(buf);
+  if (buf.byteLength < 20 || dv.getUint32(0, true) !== 0x46546C67) throw new Error("Das ist keine Berichtsdatei (.glb).");
+  const len = dv.getUint32(12, true);
+  if (dv.getUint32(16, true) !== 0x4E4F534A) return null;
+  const j = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 20, len)));
+  const d = j.extras && j.extras.kratzerscan;
+  return d && d.format === "kratzerscan-bericht" ? d : null;
+}
+
+async function openBlob(blob, name, save = true) {
+  $("err").hidden = true;
+  let data;
+  try {
+    const buf = await blob.arrayBuffer();
+    data = readGlb(buf);
+    if (url) URL.revokeObjectURL(url);
+    url = URL.createObjectURL(new Blob([buf], { type: "model/gltf-binary" }));
+  } catch (e) {
+    $("err").textContent = e.message || "Datei konnte nicht gelesen werden.";
+    $("err").hidden = false;
+    show(false);
+    return;
+  }
+  $("mv").setAttribute("src", url);
+  render(data, name);
+  show(true);
+  if (save) {
+    try {  // auf dem Gerät merken, damit der Bericht beim nächsten Start (auch offline) wieder da ist
+      const c = await caches.open(STORE);
+      await c.put(KEY, new Response(blob, { headers: { "x-name": encodeURIComponent(name || "") } }));
+    } catch (e) {}
+  }
+}
+
+function show(rep) {
+  $("start").hidden = rep;
+  $("report").hidden = !rep;
+  window.scrollTo(0, 0);
+}
+
+function render(d, name) {
+  const mv = $("mv");
+  mv.querySelectorAll(".hs").forEach(h => h.remove());
+  $("chips").replaceChildren();
+  $("details").hidden = !d;
+  $("plain").hidden = !!d;
+  if (!d) {
+    $("title").textContent = name || "3D-Modell";
+    $("htitle").textContent = "KratzerScan Viewer";
+    $("meta").textContent = "";
+    return;
+  }
+  const kz = d.kennzeichen ? " – " + d.kennzeichen : "";
+  $("title").textContent = (d.titel || "Schadensbericht") + kz;
+  $("htitle").textContent = d.kennzeichen || "KratzerScan Viewer";
+  $("meta").textContent = `Quelle: ${d.quelle || "–"} · erstellt ${d.erstellt || "–"}`;
+  document.title = "Schadensbericht" + kz;
+
+  const areas = new Map((d.bereiche || []).map(a => [a.nr, a]));
+  for (const m of d.markierungen || []) {
+    const a = areas.get(m.nr);
+    if (!a) continue;
+    const b = el("button", { className: "hs", slot: "hotspot-" + m.nr }, String(m.nr),
+      el("span", { textContent: `${a.bauteil} · ${a.laenge_mm.toFixed(0)} × ${a.breite_mm.toFixed(0)} mm · ${a.flaeche_cm2.toFixed(0)} cm²` }));
+    b.style.background = a.farbe;
+    b.dataset.position = m.position.map(v => v.toFixed(4) + "m").join(" ");
+    b.dataset.normal = m.normale.map(v => v.toFixed(4)).join(" ");
+    mv.append(b);
+    const chip = el("button", { className: "chip" }, dot(a), " " + a.bauteil);
+    chip.onclick = () => focus(m);
+    $("chips").append(chip);
+  }
+
+  $("fz").replaceChildren(...(d.fahrzeug || []).map(([k, v]) => el("tr", {}, el("th", { textContent: k }), el("td", { textContent: v }))));
+  $("sketch").hidden = !d.skizze_svg;
+  if (d.skizze_svg) $("sketch").src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(d.skizze_svg);  // als Bild: kein Skript
+  $("verm").replaceChildren(...(d.vermessung || []).flatMap((l, i) => i ? [el("br"), l] : [l]));
+  const p = d.bauteile || { kopf: [], zeilen: [] };
+  $("parts").replaceChildren(el("tr", {}, ...p.kopf.map(h => el("th", { textContent: h }))),
+    ...p.zeilen.map(r => el("tr", {}, ...r.map(c => el("td", { textContent: String(c) })))));
+
+  $("cards").replaceChildren(...(d.bereiche || []).map(a => {
+    const c = el("div", { className: "card" });
+    c.style.borderTop = `5px solid ${a.farbe}`;
+    if (a.bild && B64.test(a.bild)) c.append(el("img", { src: "data:image/jpeg;base64," + a.bild, alt: "Bereich " + a.nr, loading: "lazy" }));
+    const t = el("div", {}, el("b", { textContent: `Bereich ${a.nr}` }), ` – ${a.bauteil}`, el("br"),
+      `${a.laenge_mm.toFixed(0)} × ${a.breite_mm.toFixed(0)} mm · Schadensfläche ${a.flaeche_cm2.toFixed(0)} cm² ` +
+      `(tief ${a.tief_cm2.toFixed(0)} cm²) · Reparaturfläche ${a.reparatur_cm2.toFixed(0)} cm²` +
+      (a.verformung_mm ? ` · Verformungsverdacht ${a.verformung_mm.toFixed(1)} mm` : ""));
+    c.append(t);
+    const m = (d.markierungen || []).find(x => x.nr === a.nr);
+    if (m) c.onclick = () => focus(m);
+    return c;
+  }));
+  $("hinweis").textContent = (d.pruefung_dE != null ? `Prüfung Modell vs. Video: mittlere Farbabweichung ΔE = ${d.pruefung_dE.toFixed(1)}. ` : "") + (d.hinweis || "");
+}
+
+function dot(a) {
+  const s = el("span", { className: "dot", textContent: a.nr });
+  s.style.background = a.farbe;
+  return s;
+}
+
+// Kamera auf einen Schadensbereich richten: von außen entlang der Flächennormale
+function focus(m) {
+  const mv = $("mv"), [x, y, z] = m.position, [nx, ny, nz] = m.normale;
+  mv.cameraTarget = `${x}m ${y}m ${z}m`;
+  mv.cameraOrbit = `${Math.atan2(nx, nz)}rad ${Math.acos(Math.max(-1, Math.min(1, ny)))}rad 0.5m`;
+  mv.fieldOfView = "30deg";
+  mv.querySelectorAll(".hs").forEach(h => h.classList.toggle("open", h.slot === "hotspot-" + m.nr));
+  mv.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+// Angaben der Markierungen per Antippen ein-/ausblenden
+document.addEventListener("click", ev => {
+  const hs = ev.target.closest(".hs");
+  document.querySelectorAll(".hs.open").forEach(h => { if (h !== hs) h.classList.remove("open"); });
+  if (hs) hs.classList.toggle("open");
+});
+
+$("file").onchange = ev => {
+  const f = ev.target.files[0];
+  if (f) openBlob(f, f.name);
+  ev.target.value = "";
+};
+$("close").onclick = async () => {
+  try { await caches.delete(STORE); } catch (e) {}
+  $("mv").removeAttribute("src");
+  document.title = "KratzerScan Viewer";
+  $("htitle").textContent = "KratzerScan Viewer";
+  show(false);
+};
+
+// Ziehen & Ablegen (PC)
+const drop = $("drop");
+["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(t => drop.addEventListener(t, () => drop.classList.remove("over")));
+drop.addEventListener("drop", e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) openBlob(f, f.name); });
+
+// Mit dem Viewer öffnen (Desktop-Chrome, installierte App)
+if ("launchQueue" in window) launchQueue.setConsumer(async p => {
+  if (p.files && p.files.length) { const f = await p.files[0].getFile(); openBlob(f, f.name); }
+});
+
+// Zuletzt geöffneten bzw. per „Teilen“ (Android) empfangenen Bericht laden
+(async () => {
+  try {
+    const r = await (await caches.open(STORE)).match(KEY);
+    if (r) openBlob(await r.blob(), decodeURIComponent(r.headers.get("x-name") || ""), false);
+  } catch (e) {}
+  if (location.search) history.replaceState(null, "", location.pathname);
+})();
+
+if ("serviceWorker" in navigator && location.protocol.startsWith("http"))
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+</script>
+</body>
+</html>
