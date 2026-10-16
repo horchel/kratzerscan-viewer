@@ -191,10 +191,11 @@ function render(d, name) {
     $("meta").textContent = "";
     return;
   }
-  const kz = d.kennzeichen ? " – " + d.kennzeichen : "";
+  const car = d.kennzeichen || d.fahrzeug_name || "";
+  const kz = car ? " – " + car : "";
   $("title").textContent = (d.titel || "Schadensbericht") + kz;
-  $("htitle").textContent = d.kennzeichen || "KratzerScan Viewer";
-  $("meta").textContent = `Quelle: ${d.quelle || "–"} · erstellt ${d.erstellt || "–"}`;
+  $("htitle").textContent = car || "KratzerScan Viewer";
+  $("meta").textContent = (d.quelle ? `Quelle: ${d.quelle} · ` : "") + `erstellt ${d.erstellt || "–"}`;
   document.title = "Schadensbericht" + kz;
 
   const areas = new Map((d.bereiche || []).map(a => [a.nr, a]));
