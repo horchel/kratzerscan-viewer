@@ -1,6 +1,6 @@
 // KratzerScan Viewer: App-Dateien offline vorhalten, per „Teilen“ (Android) empfangene Berichte übernehmen.
-const CACHE = "kratzerscan-viewer-v2";
-const FILES = ["./", "./index.html", "./manifest.webmanifest", "./model-viewer.min.js",
+const CACHE = "kratzerscan-viewer-v3";
+const FILES = ["./", "./index.html", "./manifest.webmanifest", "./model-viewer.min.js", "./i18n.json",
   "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./apple-touch-icon.png"];
 const STORE = "kratzerscan-bericht", KEY = "./_bericht";  // wie in index.html
 

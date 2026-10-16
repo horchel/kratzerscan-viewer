@@ -1,7 +1,7 @@
 {
-  "name": "KratzerScan Viewer",
-  "short_name": "KratzerScan",
-  "description": "Schadensberichte von KratzerScan ansehen – 3D-Modell mit markierten Schäden, Bauteile, Empfehlung",
+  "name": "3dBid",
+  "short_name": "3dBid",
+  "description": "3D-Schadensbericht ansehen · Voir le rapport 3D · View 3D damage report",
   "lang": "de",
   "id": "./",
   "start_url": "./",

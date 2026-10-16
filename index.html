@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>KratzerScan Viewer</title>
-<meta name="description" content="Schadensberichte von KratzerScan ansehen – 3D-Modell mit markierten Schäden, Bauteile, Empfehlung.">
+<title>3dBid</title>
+<meta name="description" content="3D-Schadensbericht ansehen · Voir le rapport 3D · View 3D damage report">
 <meta name="theme-color" content="#15202A">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="KratzerScan">
+<meta name="apple-mobile-web-app-title" content="3dBid">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -26,6 +26,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system
 header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:10px 16px;
   padding-top:max(10px,env(safe-area-inset-top));background:#15202A;color:#fff}
 header img{width:30px;height:30px;border-radius:7px}
+.langs{display:flex;gap:6px;font-size:13px}.langs a{color:#fff;opacity:.7;text-decoration:none}.langs a.on{opacity:1;font-weight:700;text-decoration:underline}
 header b{font-size:17px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 button,.btn{font:inherit;border:0;border-radius:10px;padding:9px 14px;cursor:pointer;background:var(--accent);color:var(--accent-ink);
   font-weight:600;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
@@ -73,26 +74,22 @@ th{background:var(--chip)}
 <body>
 <header>
   <img src="icon-192.png" alt="">
-  <b id="htitle">KratzerScan Viewer</b>
-  <label class="btn" for="file">Bericht öffnen</label>
+  <b id="htitle">3dBid</b>
+  <span class="langs" id="langs"></span>
+  <label class="btn" for="file" data-i18n="v_open">Bericht öffnen</label>
   <input id="file" type="file" hidden>
 </header>
 
 <main>
   <section id="start">
     <div class="panel" id="drop">
-      <h1>Schadensbericht ansehen</h1>
-      <p>Öffne die Berichtsdatei aus KratzerScan (<b>Schadensbericht_….glb</b>). Du siehst das 3D-Modell mit den markierten
-        Schäden, die betroffenen Bauteile und die Empfehlung.</p>
-      <label class="btn big" for="file">Berichtsdatei wählen</label>
+      <h1 data-i18n="v_title">Schadensbericht ansehen</h1>
+      <p data-i18n="v_intro"></p>
+      <label class="btn big" for="file" data-i18n="v_choose">Berichtsdatei wählen</label>
       <p id="err" class="err" hidden></p>
-      <h2>So kommt die Datei aufs Handy</h2>
-      <ol>
-        <li><b>iPhone:</b> Anhang in Mail/WhatsApp antippen → Teilen → <i>In Dateien sichern</i>, dann hier „Berichtsdatei wählen“.</li>
-        <li><b>Android:</b> Anhang speichern und hier wählen – oder nach dem Installieren direkt über <i>Teilen → KratzerScan</i>.</li>
-      </ol>
-      <p class="note">Tipp: Über „Zum Home-Bildschirm“ (iPhone: Teilen-Menü in Safari; Android: Menü in Chrome) wird der
-        Viewer zur App und funktioniert auch offline. Berichte werden nicht hochgeladen – sie bleiben auf diesem Gerät.</p>
+      <h2 data-i18n="v_how_h">So kommt die Datei aufs Handy</h2>
+      <ol><li data-i18n="v_ios"></li><li data-i18n="v_android"></li></ol>
+      <p class="note" data-i18n="v_tip"></p>
     </div>
   </section>
 
@@ -101,25 +98,24 @@ th{background:var(--chip)}
     <p class="meta" id="meta"></p>
     <model-viewer id="mv" camera-controls touch-action="pan-y" tone-mapping="neutral" exposure="1" shadow-intensity="0"
       min-camera-orbit="auto auto 0.02m" min-field-of-view="2deg" interpolation-decay="120"
-      ar ar-modes="webxr quick-look" alt="3D-Modell des Fahrzeugs mit markierten Schäden"></model-viewer>
-    <p class="note">Drehen mit einem Finger, zoomen mit zwei Fingern. Nummer antippen zeigt die Angaben; ein Bereich unten
-      springt im Modell an die Stelle.</p>
+      ar ar-modes="webxr quick-look"></model-viewer>
+    <p class="note" data-i18n="v_hint3d"></p>
     <div class="chips" id="chips"></div>
 
     <div id="details">
-      <h2>Fahrzeug und betroffene Bereiche</h2>
-      <div class="grid2"><div class="scroll"><table id="fz"></table></div><img id="sketch" alt="Draufsicht mit betroffenen Bauteilen"></div>
-      <h2>Vermessung</h2><p id="verm"></p>
-      <h2>Betroffene Bauteile und Empfehlung</h2>
+      <h2 data-i18n="v_vehicle_h"></h2>
+      <div class="grid2"><div class="scroll"><table id="fz"></table></div><img id="sketch" alt=""></div>
+      <h2 data-i18n="v_measure_h"></h2><p id="verm"></p>
+      <h2 data-i18n="v_parts_h"></h2>
       <div class="scroll"><table id="parts"></table></div>
-      <h2>Schadensbereiche</h2>
+      <h2 data-i18n="v_areas_h"></h2>
       <div class="cards" id="cards"></div>
       <p class="note" id="hinweis"></p>
     </div>
-    <p class="note" id="plain" hidden>Diese Datei enthält nur das 3D-Modell, keine Berichtsdaten.</p>
+    <p class="note" id="plain" hidden data-i18n="v_plain"></p>
     <div class="row">
-      <label class="btn" for="file">Anderen Bericht öffnen</label>
-      <button class="ghost" id="close">Bericht von diesem Gerät entfernen</button>
+      <label class="btn" for="file" data-i18n="v_open_other"></label>
+      <button class="ghost" id="close" data-i18n="v_remove"></button>
     </div>
   </section>
 </main>
@@ -127,7 +123,7 @@ th{background:var(--chip)}
 <script>
 const $ = id => document.getElementById(id);
 const STORE = "kratzerscan-bericht", KEY = "./_bericht";
-let url = null;
+let url = null, I = null, L = "de", current = null;
 
 function el(tag, props = {}, ...kids) {
   const n = document.createElement(tag);
@@ -136,11 +132,37 @@ function el(tag, props = {}, ...kids) {
   return n;
 }
 const B64 = /^[A-Za-z0-9+/=]+$/;
+const fmt = (s, kw = {}) => s.replace(/\{(\w+)\}/g, (m, k) => (k in kw ? kw[k] : m));
+const tr = (k, kw) => fmt((I && (I.ui[L][k] || I.ui.de[k])) || k, kw);
+const n0 = x => (x == null ? "" : Number(x).toFixed(0));
+
+// Sprache: ?lang=…, sonst gemerkte Wahl, sonst Browsersprache
+function pickLang() {
+  const q = new URLSearchParams(location.search).get("lang");
+  let s = null;
+  try { s = localStorage.getItem("lang"); } catch (e) {}
+  const nav = (navigator.languages || [navigator.language || "de"]).map(x => x.slice(0, 2).toLowerCase());
+  return [q, s, ...nav].find(x => x && I.langs.includes(x)) || "de";
+}
+function setLang(l) {
+  L = l;
+  try { localStorage.setItem("lang", l); } catch (e) {}
+  document.documentElement.lang = l;
+  document.querySelectorAll("[data-i18n]").forEach(n => { n.innerHTML = tr(n.dataset.i18n); });  // eigene, feste Texte
+  $("mv").alt = tr("v_alt");
+  $("sketch").alt = tr("v_sketch_alt");
+  $("langs").replaceChildren(...I.langs.map(x => {
+    const a = el("a", { href: "#", textContent: x.toUpperCase(), className: x === L ? "on" : "" });
+    a.onclick = ev => { ev.preventDefault(); setLang(x); };
+    return a;
+  }));
+  if (current) render(current.d, current.name);
+}
 
 // GLB lesen: Kopf prüfen, JSON-Teil auswerten (Berichtsdaten in extras.kratzerscan)
 function readGlb(buf) {
   const dv = new DataView(buf);
-  if (buf.byteLength < 20 || dv.getUint32(0, true) !== 0x46546C67) throw new Error("Das ist keine Berichtsdatei (.glb).");
+  if (buf.byteLength < 20 || dv.getUint32(0, true) !== 0x46546C67) throw new Error(tr("v_not_glb"));
   const len = dv.getUint32(12, true);
   if (dv.getUint32(16, true) !== 0x4E4F534A) return null;
   const j = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 20, len)));
@@ -157,12 +179,13 @@ async function openBlob(blob, name, save = true) {
     if (url) URL.revokeObjectURL(url);
     url = URL.createObjectURL(new Blob([buf], { type: "model/gltf-binary" }));
   } catch (e) {
-    $("err").textContent = e.message || "Datei konnte nicht gelesen werden.";
+    $("err").textContent = e.message || tr("v_read_err");
     $("err").hidden = false;
     show(false);
     return;
   }
   $("mv").setAttribute("src", url);
+  current = { d: data, name };
   render(data, name);
   show(true);
   if (save) {
@@ -179,6 +202,20 @@ function show(rep) {
   window.scrollTo(0, 0);
 }
 
+// Übersetzungshilfen für Berichtsdaten (Fallback: deutscher Text aus der Datei)
+const partName = n => (I.parts[L] && I.parts[L][n]) || n;
+const measure = (r, short) => {
+  const m = (short ? I.massnahmen_kurz : I.massnahmen)[L];
+  return (r.massnahme_code && m[r.massnahme_code]) || r.massnahme || "";
+};
+const reasons = r => (r.gruende || []).map(g => fmt(I.gruende[L][g.k] || "", g)).join("; ");
+const paint = r => {
+  if (r.lackierung === "Felgenfarbe") return I.lack[L].wheel;
+  if (!r.lack) return r.lackierung || "";
+  const p = [r.lack.farbe, r.lack.farbcode ? I.lack[L].code + " " + r.lack.farbcode : null].filter(Boolean);
+  return p.join(" ") || I.lack[L].vehicle;
+};
+
 function render(d, name) {
   const mv = $("mv");
   mv.querySelectorAll(".hs").forEach(h => h.remove());
@@ -186,55 +223,70 @@ function render(d, name) {
   $("details").hidden = !d;
   $("plain").hidden = !!d;
   if (!d) {
-    $("title").textContent = name || "3D-Modell";
-    $("htitle").textContent = "KratzerScan Viewer";
+    $("title").textContent = name || "3D";
     $("meta").textContent = "";
     return;
   }
   const car = d.kennzeichen || d.fahrzeug_name || "";
-  const kz = car ? " – " + car : "";
-  $("title").textContent = (d.titel || "Schadensbericht") + kz;
-  $("htitle").textContent = car || "KratzerScan Viewer";
-  $("meta").textContent = (d.quelle ? `Quelle: ${d.quelle} · ` : "") + `erstellt ${d.erstellt || "–"}`;
-  document.title = "Schadensbericht" + kz;
+  $("title").textContent = car ? car : tr("v_title");
+  $("htitle").textContent = car || document.title;
+  $("meta").textContent = tr("v_created", { date: d.erstellt || "–" });
 
   const areas = new Map((d.bereiche || []).map(a => [a.nr, a]));
   for (const m of d.markierungen || []) {
     const a = areas.get(m.nr);
     if (!a) continue;
     const b = el("button", { className: "hs", slot: "hotspot-" + m.nr }, String(m.nr),
-      el("span", { textContent: `${a.bauteil} · ${a.laenge_mm.toFixed(0)} × ${a.breite_mm.toFixed(0)} mm · ${a.flaeche_cm2.toFixed(0)} cm²` }));
+      el("span", { textContent: `${partName(a.bauteil)} · ${n0(a.laenge_mm)} × ${n0(a.breite_mm)} mm · ${n0(a.flaeche_cm2)} cm²` }));
     b.style.background = a.farbe;
     b.dataset.position = m.position.map(v => v.toFixed(4) + "m").join(" ");
     b.dataset.normal = m.normale.map(v => v.toFixed(4)).join(" ");
     mv.append(b);
-    const chip = el("button", { className: "chip" }, dot(a), " " + a.bauteil);
+    const chip = el("button", { className: "chip" }, dot(a), " " + partName(a.bauteil));
     chip.onclick = () => focus(m);
     $("chips").append(chip);
   }
 
-  $("fz").replaceChildren(...(d.fahrzeug || []).map(([k, v]) => el("tr", {}, el("th", { textContent: k }), el("td", { textContent: v }))));
-  $("sketch").hidden = !d.skizze_svg;
-  if (d.skizze_svg) $("sketch").src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(d.skizze_svg);  // als Bild: kein Skript
-  $("verm").replaceChildren(...(d.vermessung || []).flatMap((l, i) => i ? [el("br"), l] : [l]));
-  const p = d.bauteile || { kopf: [], zeilen: [] };
-  $("parts").replaceChildren(el("tr", {}, ...p.kopf.map(h => el("th", { textContent: h }))),
-    ...p.zeilen.map(r => el("tr", {}, ...r.map(c => el("td", { textContent: String(c) })))));
+  // Fahrzeug: neutrale Felder (neue Berichte) oder fertige deutsche Zeilen (ältere)
+  const rowsFz = d.felder
+    ? d.felder.map(([k, v]) => [I.fields[L][k] || k, Array.isArray(v) ? v.map(partName).join(", ") : String(v)])
+    : (d.fahrzeug || []);
+  $("fz").replaceChildren(...rowsFz.map(([k, v]) => el("tr", {}, el("th", { textContent: k }), el("td", { textContent: v }))));
+  const svg = (d.skizzen && (d.skizzen[L] || d.skizzen.de)) || d.skizze_svg;
+  $("sketch").hidden = !svg;
+  if (svg) $("sketch").src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);  // als Bild: kein Skript
+
+  const verm = [];
+  if (d.massstab) verm.push(tr("v_scale", { z: d.massstab.zeichen, b: d.massstab.bilder, s: d.massstab.streuung_pct }));
+  if (d.massstab && d.geprueft) verm.push(tr("v_checked"));
+  const lines = verm.length ? verm : (d.vermessung || []);
+  $("verm").replaceChildren(...lines.flatMap((l, i) => (i ? [el("br"), l] : [l])));
+
+  const head = I.head[L];
+  if (d.bauteile_daten) {
+    $("parts").replaceChildren(el("tr", {}, ...head.map(h => el("th", { textContent: h }))),
+      ...d.bauteile_daten.map(r => el("tr", {}, ...[partName(r.bauteil), (r.nrs || []).join(", "), n0(r.ausdehnung_mm),
+        n0(r.flaeche_cm2), n0(r.reparatur_cm2), n0(r.anteil_pct), measure(r), paint(r), reasons(r)]
+        .map(c => el("td", { textContent: String(c) })))));
+  } else {
+    const p = d.bauteile || { kopf: [], zeilen: [] };
+    $("parts").replaceChildren(el("tr", {}, ...p.kopf.map(h => el("th", { textContent: h }))),
+      ...p.zeilen.map(r => el("tr", {}, ...r.map(c => el("td", { textContent: String(c) })))));
+  }
 
   $("cards").replaceChildren(...(d.bereiche || []).map(a => {
     const c = el("div", { className: "card" });
     c.style.borderTop = `5px solid ${a.farbe}`;
-    if (a.bild && B64.test(a.bild)) c.append(el("img", { src: "data:image/jpeg;base64," + a.bild, alt: "Bereich " + a.nr, loading: "lazy" }));
-    const t = el("div", {}, el("b", { textContent: `Bereich ${a.nr}` }), ` – ${a.bauteil}`, el("br"),
-      `${a.laenge_mm.toFixed(0)} × ${a.breite_mm.toFixed(0)} mm · Schadensfläche ${a.flaeche_cm2.toFixed(0)} cm² ` +
-      `(tief ${a.tief_cm2.toFixed(0)} cm²) · Reparaturfläche ${a.reparatur_cm2.toFixed(0)} cm²` +
-      (a.verformung_mm ? ` · Verformungsverdacht ${a.verformung_mm.toFixed(1)} mm` : ""));
-    c.append(t);
+    if (a.bild && B64.test(a.bild)) c.append(el("img", { src: "data:image/jpeg;base64," + a.bild, alt: tr("v_area", { nr: a.nr }), loading: "lazy" }));
+    const line = tr("v_area_line", { l: n0(a.laenge_mm), w: n0(a.breite_mm), a: n0(a.flaeche_cm2), d: n0(a.tief_cm2), r: n0(a.reparatur_cm2) })
+      + (a.verformung_mm ? " · " + tr("v_deform", { mm: Number(a.verformung_mm).toFixed(1) }) : "");
+    c.append(el("div", {}, el("b", { textContent: tr("v_area", { nr: a.nr }) }), ` – ${partName(a.bauteil)}`, el("br"), line));
     const m = (d.markierungen || []).find(x => x.nr === a.nr);
     if (m) c.onclick = () => focus(m);
     return c;
   }));
-  $("hinweis").textContent = (d.pruefung_dE != null ? `Prüfung Modell vs. Video: mittlere Farbabweichung ΔE = ${d.pruefung_dE.toFixed(1)}. ` : "") + (d.hinweis || "");
+  $("hinweis").textContent = (d.pruefung_dE != null ? tr("v_dE", { v: Number(d.pruefung_dE).toFixed(1) }) : "")
+    + (d.bauteile_daten ? I.note[L] : (d.hinweis || ""));
 }
 
 function dot(a) {
@@ -268,8 +320,8 @@ $("file").onchange = ev => {
 $("close").onclick = async () => {
   try { await caches.delete(STORE); } catch (e) {}
   $("mv").removeAttribute("src");
-  document.title = "KratzerScan Viewer";
-  $("htitle").textContent = "KratzerScan Viewer";
+  current = null;
+  $("htitle").textContent = document.title;
   show(false);
 };
 
@@ -284,19 +336,22 @@ if ("launchQueue" in window) launchQueue.setConsumer(async p => {
   if (p.files && p.files.length) { const f = await p.files[0].getFile(); openBlob(f, f.name); }
 });
 
-// Bericht per Link (…/#bericht=ordner/datei.glb, nur Dateien neben dem Viewer), sonst zuletzt geöffneten bzw.
-// per „Teilen“ (Android) empfangenen Bericht laden
+// Start: Übersetzungen laden, dann Bericht per Link (…/#bericht=ordner/datei.glb, nur neben dem Viewer)
+// oder den zuletzt geöffneten bzw. per „Teilen“ (Android) empfangenen Bericht
 (async () => {
+  try { I = await (await fetch("i18n.json")).json(); }
+  catch (e) { I = { langs: ["de"], names: {}, ui: { de: {} }, parts: { de: {} }, massnahmen: { de: {} }, massnahmen_kurz: { de: {} }, gruende: { de: {} }, lack: { de: {} }, head: { de: [] }, fields: { de: {} }, note: { de: "" } }; }
+  setLang(pickLang());
   const link = location.hash.match(/^#bericht=([\w./-]+\.glb)$/);
   if (link && !link[1].includes("..")) {
-    $("err").textContent = "Bericht wird geladen …";
+    $("err").textContent = tr("v_loading");
     $("err").hidden = false;
     try {
       const r = await fetch(link[1]);
       if (!r.ok) throw new Error();
       return openBlob(await r.blob(), link[1].split("/").pop(), false);
     } catch (e) {
-      $("err").textContent = "Bericht konnte nicht geladen werden.";
+      $("err").textContent = tr("v_load_err");
       return;
     }
   }
@@ -304,7 +359,6 @@ if ("launchQueue" in window) launchQueue.setConsumer(async p => {
     const r = await (await caches.open(STORE)).match(KEY);
     if (r) openBlob(await r.blob(), decodeURIComponent(r.headers.get("x-name") || ""), false);
   } catch (e) {}
-  if (location.search) history.replaceState(null, "", location.pathname);
 })();
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http"))
